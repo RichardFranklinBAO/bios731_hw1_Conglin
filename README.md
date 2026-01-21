@@ -71,8 +71,8 @@ The Docker image includes all system deps and R packages (rmarkdown, here, tidyv
 ## TA quick check
 ```
 # fresh clone
-git clone https://github.com/RichardFranklinBAO/D550_FinalProject.git
-cd D550_FinalProject
+git clone https://github.com/RichardFranklinBAO/bios731_hw1_Conglin.git
+cd bios731_hw1_Conglin
 
 # render via Docker
 make docker-build
