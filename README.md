@@ -83,6 +83,9 @@ test -f report/R_Project.html && echo "✅ report OK" || echo "❌ report missin
 
 Output: report/R_Project.pdf
 
+Note: Files in `data/clean/` and `report/` are generated artifacts.
+They can be safely removed using `make clean` and will be recreated when running `make report`.
+
 ```
 ## License
 For course use and demonstration only.
