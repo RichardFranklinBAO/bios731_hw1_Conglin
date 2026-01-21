@@ -1,0 +1,122 @@
+---
+title: "Cross-Sectional Momentum on S&P 500 (Kaggle)"
+author: Conglin BAO
+date: "`r format(Sys.Date(), '%b %e, %Y')`"
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(here)
+here::i_am("R_Project.Rmd")
+
+```
+
+## Introduction
+We analyze the Kaggle dataset “S&P 500 stock data” (camnugent/sandp500), which ~5 years of daily open, high, low, and close prices and trading volume (OHLCV) in `all_stocks_5yr.csv`.
+Our objectives are to:
+
+1. Read raw stock price data using relative paths and perform necessary data cleaning.
+2. Aggregate daily prices into monthly log returns and create a tidy dataset for analysis.
+3. Construct a 12–1 cross-sectional momentum signal.
+4. Form decile portfolios and evaluate the long–short (Q10–Q1) strategy.
+5. Visualize cumulative performance with and without transaction costs.
+
+All data processing, modeling, and visualization steps are implemented in separate,
+reproducible R scripts and sourced below.
+
+### Data cleaning and preparation
+
+The raw daily price data are already relatively clean and complete.
+Minimal preprocessing is therefore required.
+We convert the date variable to a proper Date class, aggregate daily prices to monthly frequency by taking the last trading-day close of each month, and compute monthly log returns.
+Observations with missing returns (first month per stock) are dropped.
+The resulting dataset is a tidy stock–month panel and is saved for downstream analysis.
+
+The script below reads the raw data from the `data/raw/` directory, performs cleaning and aggregation, and produces a tidy monthly return dataset saved to `data/clean/`.
+```{r data_cleaning}
+source(here::here("code", "01_data_reading_cleaning.R"))
+```
+
+This step constructs the 12–1 momentum signal, forms decile portfolios, and fits a simple
+statistical model (monthly cross-sectional regression) to evaluate the relationship between
+momentum and subsequent returns. This regression tests whether stocks with higher past 12–1 momentum tend to earn higher subsequent monthly returns on average.
+
+```{r modeling}
+source(here::here("code", "02_modeling.R"))
+```
+
+### Model output
+We fit a monthly cross-sectional regression `ret1m ~ mom_12_1` and summarize the distribution of estimated slope coefficients (betas) across months.
+
+```{r model_summary}
+suppressPackageStartupMessages({
+  library(knitr)
+})
+knitr::kable(cs_reg_summary, digits = 4,
+             caption = "Summary of monthly cross-sectional regression slopes (ret1m ~ mom_12_1).")
+```
+
+
+```{r visualization}
+source(here::here("code", "03_visualization.R"))
+```
+
+### Table
+```{r table1, message=FALSE}
+# 4: Results — table
+# sample coverage + performance metrics
+R_ls <- xts::xts(port_tbl$ls, order.by = port_tbl$month)
+
+library(scales)
+
+# 原始汇总（保持不变）
+tab1 <- tibble::tibble(
+  start      = min(port_tbl$month),
+  end        = max(port_tbl$month),
+  n_stocks   = dplyr::n_distinct(rets$Name),
+  n_obs      = nrow(rets),
+  mean_LS    = mean(port_tbl$ls, na.rm = TRUE),
+  ann_ret    = as.numeric(PerformanceAnalytics::Return.annualized(R_ls, scale = 12)),
+  ann_vol    = as.numeric(PerformanceAnalytics::StdDev.annualized(R_ls, scale = 12)),
+  sharpe     = as.numeric(PerformanceAnalytics::SharpeRatio.annualized(R_ls, scale = 12))
+)
+
+# 格式化 + 完整列名
+tab1_fmt <- tab1 |>
+  dplyr::transmute(
+    `Sample start`                   = format(start, "%Y-%m"),
+    `Sample end`                     = format(end, "%Y-%m"),
+    `Unique tickers`                 = comma(n_stocks),
+    `Stock–month observations`       = comma(n_obs),
+    `Avg monthly long–short (log)`   = percent(mean_LS, accuracy = 0.01),
+    `Annualized return`              = percent(ann_ret, accuracy = 0.01),
+    `Annualized volatility`          = percent(ann_vol, accuracy = 0.01),
+    `Sharpe ratio`                   = round(sharpe, 2)
+  )
+
+knitr::kable(
+  tab1_fmt,
+  caption = "Sample coverage and momentum long–short performance (gross).",
+  align   = c("l","l","r","r","r","r","r","r")
+)
+```
+
+## Table description: <br>
+The table summarizes the sample used in the 12–1 cross-sectional momentum test. We work from March 2014 to February 2018, covering 505 unique S&P-500 tickers and 29,507 stock–months after aggregating daily prices to monthly log returns (last trading day of each month). The equal-weight long–short portfolio (long top decile by momentum, short bottom decile) delivers an average monthly log return of 0.45%, which annualizes to 4.05% with 17.38% annualized volatility, yielding a Sharpe ratio of 0.23. These are gross results (no transaction costs) and reflect a short sample and a simple specification—no industry/size neutrality or turnover control—so they should be viewed as a reproducible baseline rather than an optimized strategy.
+
+### Figure
+```{r figure, fig.width=7, fig.height=4.2}
+print(p_cum)
+```
+
+## Figure description: <br>
+The figure plots the cumulative wealth of the monthly long–short momentum portfolio starting at $1. The gross curve (solid) and the net-of-costs curve (dashed; 3 bps per side, 50% monthly turnover) track each other closely—costs impose only a small drag under these assumptions. Performance dips in early 2014, rallies through 2015, reaches a local peak around early 2016, then experiences a drawdown into early 2017, followed by a partial recovery; by the end of the sample the portfolio stands near $1.24 gross with a slightly lower net value. This pattern is consistent with momentum cycles over the period and highlights that costs matter but are not dominant with the simple settings used here.
