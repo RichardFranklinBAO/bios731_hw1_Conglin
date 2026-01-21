@@ -25,6 +25,7 @@ report: docker-report
 
 clean:
 	rm -rf report
+	rm -rf data/clean
 
 help:
 	@echo "make docker-build  # building docker"
