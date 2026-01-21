@@ -154,7 +154,7 @@ Platform: aarch64-apple-darwin20
 Running under: macOS 26.2
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
 LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 
 locale:
@@ -164,8 +164,20 @@ time zone: America/New_York
 tzcode source: internal
 
 attached base packages:
-[1] stats     graphics  grDevices datasets  utils     methods   base     
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] scales_1.3.0               ggplot2_3.5.1              knitr_1.48                 PerformanceAnalytics_2.0.8
+ [5] xts_0.14.1                 zoo_1.8-12                 slider_0.3.2               tidyr_1.3.1               
+ [9] readr_2.1.5                dplyr_1.1.4                here_1.0.1                
 
 loaded via a namespace (and not attached):
-[1] compiler_4.4.1 tools_4.4.1    renv_1.1.5
+ [1] utf8_1.2.4        generics_0.1.3    renv_1.1.5        lattice_0.22-6    hms_1.1.3         digest_0.6.37    
+ [7] magrittr_2.0.3    evaluate_0.24.0   grid_4.4.1        fastmap_1.2.0     rprojroot_2.0.4   tinytex_0.52     
+[13] purrr_1.0.2       fansi_1.0.6       cli_3.6.3         rlang_1.1.4       crayon_1.5.3      bit64_4.5.2      
+[19] munsell_0.5.1     withr_3.0.1       yaml_2.3.10       tools_4.4.1       parallel_4.4.1    tzdb_0.4.0       
+[25] colorspace_2.1-1  vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   bit_4.5.0         vroom_1.6.5      
+[31] pkgconfig_2.0.3   warp_0.2.1        pillar_1.9.0      gtable_0.3.5      rsconnect_1.3.3   glue_1.8.0       
+[37] xfun_0.47         tibble_3.2.1      tidyselect_1.2.1  highr_0.11        rstudioapi_0.16.0 farver_2.1.2     
+[43] htmltools_0.5.8.1 rmarkdown_2.28    labeling_0.4.3    compiler_4.4.1    quadprog_1.5-8   
 
